@@ -84,11 +84,6 @@ function createDropdownMenu()
   option.text = "All";
   typeList.appendChild(option);
 
-
-  app.getList("Type", function(reply){
-    console.log(reply);
-  });
-
   app.createList({
     "qDef": {
       "qFieldDefs": [
@@ -130,7 +125,11 @@ function createDropdownMenu()
 
       $("#type-menu").val(typeVal);
       $("#type-menu").change(function(){
-        drawGraph();
+        app.field("Type").clear();
+        if($("#type-menu").val()!="All")
+        {
+          app.field("Type").select([parseInt($("#type-menu").val())], true, true);
+        }
       });
     });
 
@@ -141,15 +140,7 @@ function createDropdownMenu()
 function drawGraph(){
 	var xVal=$("#x-axis-menu").val()
   var yVal=$("#y-axis-menu").val()
-  var typeVal=$("#type-menu").val()
 
-
-  app.field("Type").clear();
-  if(typeVal!="All")
-  {
-    console.log(typeVal);
-    app.field("Type").select([parseInt(typeVal)], true, true);
-  }
 	//Create a new hypercube base on xVal and yVal
 	var qHyperCubeDef={                
 	    qDimensions : [
@@ -181,6 +172,8 @@ function drawGraph(){
 	app.createCube(qHyperCubeDef, function(reply) {
     //draw graph
 		viz($("#pokemonScatter"),reply,90);
+    //Append visualization
+    console.log(reply);
 	});
 }
 
