@@ -171,13 +171,86 @@ function drawGraph(){
 	}
 	app.createCube(qHyperCubeDef, function(reply) {
     //draw graph
-		viz($("#pokemonScatter"),reply,90);
+		viz($("#pokemonScatter"),reply,120);
+    putInfo(reply.qHyperCube);
     //Append visualization
     console.log(reply);
 	});
 }
 
+//Put analysis info
+function putInfo(data)
+{
+  var totalCount,currentCount;
+  var maxXName=[],maxXValue,maxYName=[],maxYValue;
+  var minXName=[],minXValue,minYName=[],minYValue;
+  var maxXYName=[],maxXYValue=-1;
+  var minXYName=[],minXYValue=99999;
+  var sumX=0,sumY=0;
+  var avgX,avgY;
 
+  totalCount=data.qDimensionInfo[0].qCardinal;
+  currentCount=data.qDimensionInfo[0].qStateCounts.qOption;
+  maxXValue=data.qMeasureInfo[0].qMax;
+  maxYValue=data.qMeasureInfo[1].qMax;
+  minXValue=data.qMeasureInfo[0].qMin;
+  minYValue=data.qMeasureInfo[1].qMin;
+
+  $.each(data.qDataPages[0].qMatrix, function(key, value) {
+    console.log(value);
+    if(value[1].qNum==maxXValue)
+      maxXName.push(value[3].qText);
+    if(value[1].qNum==minXValue)
+      minXName.push(value[3].qText);
+    if(value[2].qNum==maxYValue)
+      maxYName.push(value[3].qText);
+    if(value[2].qNum==minYValue)
+      minYName.push(value[3].qText);
+
+    var tempXYSum=value[1].qNum+value[2].qNum;
+    if(tempXYSum>maxXYValue){
+      maxXYValue=tempXYSum;
+      maxXYName=[];
+      maxXYName.push(value[3].qText);
+    }
+    else if (tempXYSum==maxXYValue) {
+      maxXYName.push(value[3].qText);
+    }
+    else if(tempXYSum<minXYValue){
+      minXYValue=tempXYSum;
+      minXYName=[];
+      minXYName.push(value[3].qText);
+    }
+    else if(tempXYSum==minXYValue){
+      minXYName.push(value[3].qText);
+    }
+    sumX+=value[1].qNum;
+    sumY+=value[2].qNum;
+  });
+  avgX=sumx/currentCount;
+  avgY=sumY/currentCount;
+
+  console.log(totalCount);
+  console.log(currentCount);
+  console.log(maxXValue);
+  console.log(maxYValue);
+  console.log(minXValue);
+  console.log(minYValue);
+  console.log(maxXName);
+  console.log(minXName);
+  console.log(maxYName);
+  console.log(minYName);
+  console.log(maxXYName);
+  console.log(maxXYValue);
+  console.log(minXYName);
+  console.log(minXYValue);
+
+
+
+  infoDiv=$("#info-div");
+  infoDiv.empty();
+  infoDiv.append( "<p>Test</p>");
+}
 
 //Graph rendering
 var viz = function($element, layout,logoSize) {
