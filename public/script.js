@@ -5,15 +5,15 @@ var config = {
 	isSecure: window.location.protocol === "https:"
 };
 var app;
-var types
 var appId="Pokemon new.qvf";
+var typeArray;
 var matrixArray=[
-	{id:"Attack",value:"Attack"},
-	{id:"Defense",value:"Defense"},
-	{id:"Special attack",value:"Sp. Atk"},
-	{id:"Special defense",value:"Sp. Def"},
-	{id:"Speed",value:"Speed"},
-	{id:"HP",value:"HP"},
+  {id:"Attack",value:"Attack"},
+  {id:"Defense",value:"Defense"},
+  {id:"Special attack",value:"Sp. Atk"},
+  {id:"Special defense",value:"Sp. Def"},
+  {id:"Speed",value:"Speed"},
+  {id:"HP",value:"HP"},
 ]
 
 //connecting to sense surver
@@ -27,8 +27,6 @@ require( ["js/qlik","./public/d3.v3.min.js","./public/senseUtils.js"], function 
 		alert( error.message );
 	} );
 	app = qlik.openApp(appId, config);
-  types=app.field('Type');
-  types.getData();
 	createDropdownMenu();
 	drawGraph();
 } );
@@ -76,6 +74,21 @@ function createDropdownMenu()
 	});
 
   //create type menu
+  var typeDiv = document.getElementById("type-div");
+  var typeList = document.createElement("select");
+  typeList.id = "type-menu";
+  typeDiv.appendChild(typeList);
+
+  var option = document.createElement("option");
+  option.value = "All";
+  option.text = "All";
+  typeList.appendChild(option);
+
+
+  app.getList("Type", function(reply){
+    console.log(reply);
+  });
+
   app.createList({
     "qDef": {
       "qFieldDefs": [
@@ -89,6 +102,15 @@ function createDropdownMenu()
         qWidth : 1
       }]
     }, function(reply) {
+      var typeVal;
+      if ($('#type-menu').length){
+        typeVal=$("#type-menu").val();
+        $("#type-menu").remove();
+      }
+      else{
+        typeVal='All';
+      }
+
       var typeDiv = document.getElementById("type-div");
       var typeList = document.createElement("select");
       typeList.id = "type-menu";
@@ -98,6 +120,7 @@ function createDropdownMenu()
       option.value = "All";
       option.text = "All";
       typeList.appendChild(option);
+
       $.each(reply.qListObject.qDataPages[0].qMatrix, function(key, value) {
         var option = document.createElement("option");
         option.value = value[0].qElemNumber;
@@ -105,7 +128,7 @@ function createDropdownMenu()
         typeList.appendChild(option);
       });
 
-      $("#type-menu").val('All');
+      $("#type-menu").val(typeVal);
       $("#type-menu").change(function(){
         drawGraph();
       });
