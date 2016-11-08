@@ -31,16 +31,6 @@ require( ["js/qlik","./public/d3.v3.min.js","./public/senseUtils.js"], function 
 	drawGraph();
 } );
 
-
-
-function loadCss(url) {
-    var link = document.createElement("link");
-    link.type = "text/css";
-    link.rel = "stylesheet";
-    link.href = url;
-    document.getElementsByTagName("head")[0].appendChild(link);
-}
-
 function createDropdownMenu()
 {
 	//create x-axis menu
@@ -106,16 +96,19 @@ function createDropdownMenu()
         typeVal='All';
       }
 
+      //Append selection menu for pokemon type
       var typeDiv = document.getElementById("type-div");
       var typeList = document.createElement("select");
       typeList.id = "type-menu";
       typeDiv.appendChild(typeList);
 
+      //Append the first option for all types
       var option = document.createElement("option");
       option.value = "All";
       option.text = "All";
       typeList.appendChild(option);
 
+      //Interate through list and append pokemon types 
       $.each(reply.qListObject.qDataPages[0].qMatrix, function(key, value) {
         var option = document.createElement("option");
         option.value = value[0].qElemNumber;
@@ -173,8 +166,6 @@ function drawGraph(){
     //draw graph
 		viz($("#pokemonScatter"),reply,120);
     putInfo(reply.qHyperCube);
-    //Append visualization
-    console.log(reply);
 	});
 }
 
@@ -197,7 +188,6 @@ function putInfo(data)
   minYValue=data.qMeasureInfo[1].qMin;
 
   $.each(data.qDataPages[0].qMatrix, function(key, value) {
-    console.log(value);
     if(value[1].qNum==maxXValue)
       maxXName.push(value[3].qText);
     if(value[1].qNum==minXValue)
@@ -227,29 +217,57 @@ function putInfo(data)
     sumX+=value[1].qNum;
     sumY+=value[2].qNum;
   });
-  avgX=sumx/currentCount;
-  avgY=sumY/currentCount;
 
-  console.log(totalCount);
-  console.log(currentCount);
-  console.log(maxXValue);
-  console.log(maxYValue);
-  console.log(minXValue);
-  console.log(minYValue);
-  console.log(maxXName);
-  console.log(minXName);
-  console.log(maxYName);
-  console.log(minYName);
-  console.log(maxXYName);
-  console.log(maxXYValue);
-  console.log(minXYName);
-  console.log(minXYValue);
+  avgX=(sumX/currentCount);
+  avgY=(sumY/currentCount);
 
+  var benchmarkPokemon=[],benchmarkDeviationValue=99999;
+  $.each(data.qDataPages[0].qMatrix, function(key, value) {
+    var xDeviation=(avgX-value[1].qNum)*(avgX-value[1].qNum);
+    var yDeviation=(avgY-value[2].qNum)*(avgY-value[2].qNum);
+    var tempBenchmarkValue=(xDeviation+yDeviation);
+    if(tempBenchmarkValue<benchmarkDeviationValue){
+      benchmarkDeviationValue=tempBenchmarkValue;
+      benchmarkPokemon=[];
+      benchmarkPokemon.push(value[3].qText);
+    }
+    else if (benchmarkDeviationValue==tempBenchmarkValue) {
+      benchmarkPokemon.push(value[3].qText);
+    }
+    console.log(benchmarkPokemon+" "+benchmarkDeviationValue);
+  });
+
+  // console.log(totalCount);
+  // console.log(currentCount);
+  // console.log(maxXValue);
+  // console.log(maxYValue);
+  // console.log(minXValue);
+  // console.log(minYValue);
+  // console.log(maxXName);
+  // console.log(minXName);
+  // console.log(maxYName);
+  // console.log(minYName);
+  // console.log(maxXYName);
+  // console.log(maxXYValue);
+  // console.log(minXYName);
+  // console.log(minXYValue);
+  // console.log(avgX);
+  // console.log(avgY);
+  // console.log(benchmarkPokemon);
+  // console.log(benchmarkDeviationValue);
 
 
   infoDiv=$("#info-div");
   infoDiv.empty();
-  infoDiv.append( "<p>Test</p>");
+  infoDiv.append( "<p>Number of Pokemon in this category:"+currentCount+"/"+totalCount+"</p>");
+  infoDiv.append( "<p>Pokemon with higest "+$("#x-axis-menu").val()+" : "+maxXName+"("+maxXValue+")</p>");
+  infoDiv.append( "<p>Pokemon with higest "+$("#y-axis-menu").val()+" : "+maxYName+"("+maxYValue+")</p>");
+  infoDiv.append( "<p>Pokemon with lowest "+$("#x-axis-menu").val()+" : "+minXName+"("+minXValue+")</p>");
+  infoDiv.append( "<p>Pokemon with lowest "+$("#y-axis-menu").val()+" : "+minYName+"("+minYValue+")</p>");
+  infoDiv.append( "<p>Strongest pokemon in this category:"+maxXYName+"("+$("#x-axis-menu").val()+"+"+$("#y-axis-menu").val()+"="+maxXYValue+")</p>");
+  infoDiv.append( "<p>Weakest pokemon in this category:"+minXYName+"("+$("#x-axis-menu").val()+"+"+$("#y-axis-menu").val()+"="+minXYValue+")</p>");
+  infoDiv.append( "<p>Average "+$("#x-axis-menu").val()+":"+avgX.toFixed(2)+" , "+"Average "+$("#y-axis-menu").val()+":"+avgY.toFixed(2)+"</p>");
+  infoDiv.append( "<p>Benchmark pokemon is "+benchmarkPokemon+" , "+"(with deviation :"+benchmarkDeviationValue.toFixed(2)+")</p>");
 }
 
 //Graph rendering
